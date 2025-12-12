@@ -157,9 +157,10 @@ class DropCell(QLabel):
         self.current_value = None
         self.setStyleSheet(self.default_style)
 
-class NumberBank(QWidget):
+class NumberBank(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("numberBank")
         self.layout = QGridLayout(self)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.layout.setSpacing(5)
@@ -167,6 +168,13 @@ class NumberBank(QWidget):
         self.widget_pool = []  # Pool of reusable widgets
         self.cols = 4  # Number of columns for the grid
         self.setAcceptDrops(True)
+        self.setStyleSheet("""
+            #numberBank {
+                background-color: #f9f9f9;
+                border: 2px solid #ccc;
+                border-radius: 5px;
+            }
+        """)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
