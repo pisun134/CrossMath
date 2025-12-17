@@ -174,6 +174,7 @@ class NumberBank(QFrame):
         self.widget_pool = []  # Pool of reusable widgets
         self.cols = 4  # Number of columns for the grid
         self.setAcceptDrops(True)
+        self.setMinimumHeight(150)
         self.setStyleSheet("""
             #numberBank {
                 background-color: #f9f9f9;
