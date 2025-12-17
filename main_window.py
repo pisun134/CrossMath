@@ -14,11 +14,11 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.main_layout = QHBoxLayout(self.central_widget)
 
-        # Left side: Game Board
+        # Левая часть: Игровое поле
         self.board_container = QWidget()
         self.board_layout = QVBoxLayout(self.board_container)
         
-        # Center the grid horizontally
+        # Центрирование сетки по горизонтали
         self.grid_centering_layout = QHBoxLayout()
         self.grid_centering_layout.addStretch()
         
@@ -32,12 +32,12 @@ class MainWindow(QMainWindow):
         self.board_layout.addLayout(self.grid_centering_layout)
         self.board_layout.addStretch()
         
-        # Right side: Controls and Number Bank
+        # Правая часть: Управление и Банк чисел
         self.controls_container = QWidget()
         self.controls_layout = QVBoxLayout(self.controls_container)
         self.controls_container.setFixedWidth(250)
 
-        # Score Display
+        # Отображение очков
         self.score = 0
         self.score_coeffs = {
             "easy": 10,
@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
         self.controls_layout.addWidget(self.score_label)
         self.controls_layout.addSpacing(10)
 
-        # Difficulty Selector
+        # Выбор сложности
         self.diff_label = QLabel("Сложность:")
         self.diff_combo = QComboBox()
         self.diff_map = {
@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
         self.controls_layout.addWidget(self.diff_label)
         self.controls_layout.addWidget(self.diff_combo)
 
-        # New Game Button
+        # Кнопка новой игры
         self.new_game_btn = QPushButton("Новая игра")
         self.new_game_btn.clicked.connect(self.start_new_game)
         self.controls_layout.addWidget(self.new_game_btn)
@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
         self.controls_layout.addSpacing(20)
         self.controls_layout.addWidget(QLabel("Доступные числа:"))
         
-        # Number Bank
+        # Банк чисел
         self.number_bank = NumberBank()
         self.controls_layout.addWidget(self.number_bank)
         self.controls_layout.addStretch()
@@ -81,17 +81,17 @@ class MainWindow(QMainWindow):
 
         self.current_grid_state = None
         self.solution_grid = None
-        self.cells = {} # Map (r, c) -> DropCell
+        self.cells = {} # Карта (r, c) -> DropCell
 
-        # Start initial game
+        # Запуск начальной игры
         self.start_new_game()
 
     def start_new_game(self):
         diff_text = self.diff_combo.currentText()
         difficulty = self.diff_map.get(diff_text, "easy")
         
-        # Generate puzzle
-        # This might take a moment, could be threaded in a real app
+        # Генерация головоломки
+        # Это может занять некоторое время, в реальном приложении можно вынести в поток
         generated = PuzzleGenerator.generate_puzzle(difficulty)
         if not generated:
             QMessageBox.warning(self, "Error", "Failed to generate puzzle. Please try again.")
@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
         playable_grid, removed_numbers = PuzzleGenerator.create_playable_state(generated, difficulty)
         self.current_grid_state = playable_grid
 
-        # Setup Grid UI
+        # Настройка UI сетки
         self.clear_grid()
         
         size = len(playable_grid)
@@ -117,14 +117,15 @@ class MainWindow(QMainWindow):
                     self.cells[(r, c)] = cell_widget
                     
                     if type_ == 'empty_number':
-                        # This is a hole
+                        # Это пустая ячейка
                         cell_widget.setStyleSheet(cell_widget.default_style)
                     else:
-                        # This is a static part (operator, equals, or given number)
+                        # Это статическая часть (оператор, равно или данное число)
                         cell_widget.setText(str(val))
-                        cell_widget.current_value = val # For validation
-                        cell_widget.setAcceptDrops(False) # Cannot drop here
-                        # Style differently for static content
+                        cell_widget.current_value = val # Для проверки
+                        cell_widget.is_droppable = False # Нельзя перетаскивать
+                        cell_widget.setAcceptDrops(False) # Сюда нельзя бросать
+                        # Стилизуем иначе для статического контента
                         cell_widget.setStyleSheet("""
                             QLabel {
                                 background-color: #ddd;
@@ -138,14 +139,14 @@ class MainWindow(QMainWindow):
                     
                     self.grid_layout.addWidget(cell_widget, r, c)
                 else:
-                    # Empty space, maybe add a spacer or just nothing
+                    # Пустое пространство, можно добавить разделитель или ничего
                     pass
 
-        # Setup Number Bank
+        # Настройка банка чисел
         self.number_bank.set_numbers(removed_numbers)
 
     def clear_grid(self):
-        # Remove all widgets from grid layout
+        # Удаление всех виджетов из макета сетки
         while self.grid_layout.count():
             item = self.grid_layout.takeAt(0)
             widget = item.widget()
@@ -154,7 +155,7 @@ class MainWindow(QMainWindow):
         self.cells = {}
 
     def on_cell_dropped(self, r, c, value, from_bank):
-        # Callback from DropCell
+        # Обратный вызов от DropCell
         if from_bank:
             self.number_bank.remove_number(value)
         self.check_solution()
@@ -168,7 +169,7 @@ class MainWindow(QMainWindow):
             return None
         
         try:
-            # Left-to-right evaluation
+            # Вычисление слева направо
             current_val = float(parts[0])
             
             i = 1
@@ -198,19 +199,19 @@ class MainWindow(QMainWindow):
             return
 
         cell_status = {} # (r,c) -> 'neutral', 'valid', 'invalid'
-        # Initialize all mutable cells to neutral
+        # Инициализация всех изменяемых ячеек как нейтральных
         for pos, cell in self.cells.items():
             if cell.acceptDrops():
                 cell_status[pos] = 'neutral'
 
         all_equations_correct = True
         
-        # Iterate over all equations defined in the solution grid
+        # Итерация по всем уравнениям, определенным в сетке решения
         for eq_data in self.solution_grid.equations:
             eq_obj, start_r, start_c, direction = eq_data
             dr, dc = direction
             
-            # Equation length on grid: parts + '=' + result
+            # Длина уравнения в сетке: части + '=' + результат
             length = len(eq_obj.parts) + 2
             
             equation_cells = []
@@ -238,7 +239,7 @@ class MainWindow(QMainWindow):
                 if i < len(eq_obj.parts):
                     lhs_parts.append(val)
                 elif i == len(eq_obj.parts):
-                    # This is '='
+                    # Это '='
                     pass
                 elif i == len(eq_obj.parts) + 1:
                     rhs_val = val
@@ -247,7 +248,7 @@ class MainWindow(QMainWindow):
                 all_equations_correct = False
                 continue
                 
-            # Evaluate
+            # Вычисление
             calc_res = self.evaluate_expression(lhs_parts)
             is_correct = False
             if calc_res is not None and rhs_val is not None:
@@ -257,17 +258,17 @@ class MainWindow(QMainWindow):
             if not is_correct:
                 all_equations_correct = False
             
-            # Update cell statuses
+            # Обновление статусов ячеек
             for r, c in equation_cells:
-                if (r, c) in cell_status: # Only update mutable cells
+                if (r, c) in cell_status: # Обновляем только изменяемые ячейки
                     if not is_correct:
                         cell_status[(r, c)] = 'invalid'
                     else:
-                        # Only mark valid if not already invalid (invalid takes precedence)
+                        # Помечаем как верное, только если оно еще не помечено как неверное (неверное имеет приоритет)
                         if cell_status[(r, c)] != 'invalid':
                             cell_status[(r, c)] = 'valid'
 
-        # Apply styles
+        # Применение стилей
         for (r, c), status in cell_status.items():
             cell = self.cells[(r, c)]
             if cell.current_value is None:

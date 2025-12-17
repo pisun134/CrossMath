@@ -1,19 +1,19 @@
-# Cross Math Game Implementation
+# Реализация игры Cross Math
 
-- [ ] Planning and Design
-    - [ ] Create implementation plan <!-- id: 0 -->
-    - [ ] Define game logic structure (Puzzle Generation) <!-- id: 1 -->
-    - [ ] Define UI structure (PyQt6 Main Window, Drag & Drop) <!-- id: 2 -->
-- [ ] Core Logic Implementation
-    - [ ] Implement Equation Generator <!-- id: 3 -->
-    - [ ] Implement Grid Generator (Crossword layout) <!-- id: 4 -->
-    - [ ] Implement Difficulty Levels (Easy, Medium, Hard, Expert) <!-- id: 5 -->
-- [ ] UI Implementation
-    - [ ] Setup Main Window and Layouts <!-- id: 6 -->
-    - [ ] Implement Draggable Number List <!-- id: 7 -->
-    - [ ] Implement Drop Targets (Grid Cells) <!-- id: 8 -->
-    - [ ] Connect Logic to UI (New Game, Validation) <!-- id: 9 -->
-- [ ] Verification and Polish
-    - [ ] Verify Drag and Drop functionality <!-- id: 10 -->
-    - [ ] Verify Puzzle Solvability <!-- id: 11 -->
-    - [ ] Polish UI (Styling, Feedback) <!-- id: 12 -->
+- [ ] Планирование и дизайн
+    - [ ] Создать план реализации <!-- id: 0 -->
+    - [ ] Определить структуру игровой логики (Генерация головоломки) <!-- id: 1 -->
+    - [ ] Определить структуру UI (Главное окно PyQt6, Drag & Drop) <!-- id: 2 -->
+- [ ] Реализация основной логики
+    - [ ] Реализовать генератор уравнений <!-- id: 3 -->
+    - [ ] Реализовать генератор сетки (Макет кроссворда) <!-- id: 4 -->
+    - [ ] Реализовать уровни сложности (Легкий, Средний, Сложный, Эксперт) <!-- id: 5 -->
+- [ ] Реализация UI
+    - [ ] Настроить главное окно и макеты <!-- id: 6 -->
+    - [ ] Реализовать перетаскиваемый список чисел <!-- id: 7 -->
+    - [ ] Реализовать цели сброса (Ячейки сетки) <!-- id: 8 -->
+    - [ ] Подключить логику к UI (Новая игра, Проверка) <!-- id: 9 -->
+- [ ] Проверка и доработка
+    - [ ] Проверить функциональность Drag and Drop <!-- id: 10 -->
+    - [ ] Проверить решаемость головоломки <!-- id: 11 -->
+    - [ ] Доработать UI (Стилизация, Обратная связь) <!-- id: 12 -->

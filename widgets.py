@@ -91,16 +91,17 @@ class DropCell(QLabel):
         """
         self.setStyleSheet(self.default_style)
         self.current_value = None
+        self.is_droppable = True
 
     def dragEnterEvent(self, e):
-        if e.mimeData().hasText():
+        if e.mimeData().hasText() and self.current_value is None:
             e.accept()
             self.setStyleSheet(self.hover_style)
         else:
             e.ignore()
 
     def dragMoveEvent(self, e):
-        if e.mimeData().hasText():
+        if e.mimeData().hasText() and self.current_value is None:
             e.setDropAction(Qt.DropAction.CopyAction)
             e.accept()
         else:
@@ -113,7 +114,7 @@ class DropCell(QLabel):
             self.setStyleSheet(self.filled_style)
 
     def mouseMoveEvent(self, e):
-        if e.buttons() == Qt.MouseButton.LeftButton and self.current_value is not None:
+        if e.buttons() == Qt.MouseButton.LeftButton and self.current_value is not None and self.is_droppable:
             drag = QDrag(self)
             mime = QMimeData()
             mime.setText(str(self.current_value))
@@ -138,12 +139,12 @@ class DropCell(QLabel):
     def dropEvent(self, e):
         text = e.mimeData().text()
         
-        # Check if dropped on self
+        # Проверка, сброшено ли на самого себя
         if e.source() == self:
             e.ignore()
             return
 
-        # If we already have a value, return it to the bank
+        # Если у нас уже есть значение, возвращаем его в банк
         if self.current_value is not None:
             old_val = self.current_value
             QTimer.singleShot(0, lambda v=old_val: self.cleared.emit(v))
@@ -171,8 +172,8 @@ class NumberBank(QFrame):
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.layout.setSpacing(5)
         self.numbers = []
-        self.widget_pool = []  # Pool of reusable widgets
-        self.cols = 4  # Number of columns for the grid
+        self.widget_pool = []  # Пул переиспользуемых виджетов
+        self.cols = 4  # Количество столбцов для сетки
         self.setAcceptDrops(True)
         self.setMinimumHeight(150)
         self.setStyleSheet("""
@@ -185,10 +186,10 @@ class NumberBank(QFrame):
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
-            # Check source to avoid self-drop issues if needed, 
-            # but for now we just accept text.
-            # If source is DraggableLabel (from bank), we might want to ignore 
-            # to avoid duplication if we don't handle removal.
+            # Проверяем источник, чтобы избежать проблем с самосбросом, если нужно,
+            # но пока мы просто принимаем текст.
+            # Если источник - DraggableLabel (из банка), мы можем захотеть игнорировать,
+            # чтобы избежать дублирования, если мы не обрабатываем удаление.
             if isinstance(e.source(), DraggableLabel):
                 e.ignore()
             else:
@@ -221,19 +222,19 @@ class NumberBank(QFrame):
         self.update_display()
 
     def update_display(self):
-        # Clear layout (remove items but don't delete widgets)
+        # Очистка макета (удаляем элементы, но не удаляем виджеты)
         while self.layout.count():
             self.layout.takeAt(0)
         
-        # Ensure pool is large enough
+        # Убеждаемся, что пул достаточно велик
         while len(self.widget_pool) < len(self.numbers):
             self.widget_pool.append(DraggableLabel("", self))
             
-        # Hide all widgets in pool initially
+        # Скрываем все виджеты в пуле изначально
         for w in self.widget_pool:
             w.hide()
             
-        # Update and place needed widgets
+        # Обновляем и размещаем необходимые виджеты
         for i, num in enumerate(self.numbers):
             w = self.widget_pool[i]
             w.setText(str(num))
