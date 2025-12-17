@@ -49,7 +49,7 @@ class DraggableLabel(QLabel):
         drag.exec(Qt.DropAction.CopyAction)
 
 class DropCell(QLabel):
-    dropped = pyqtSignal(int, int, int)
+    dropped = pyqtSignal(int, int, int, bool)
     cleared = pyqtSignal(int)
 
     def __init__(self, r, c, parent=None):
@@ -138,6 +138,11 @@ class DropCell(QLabel):
     def dropEvent(self, e):
         text = e.mimeData().text()
         
+        # Check if dropped on self
+        if e.source() == self:
+            e.ignore()
+            return
+
         # If we already have a value, return it to the bank
         if self.current_value is not None:
             old_val = self.current_value
@@ -150,7 +155,8 @@ class DropCell(QLabel):
         e.accept()
         
         val = self.current_value
-        QTimer.singleShot(0, lambda r=self.r, c=self.c, v=val: self.dropped.emit(r, c, v))
+        from_bank = isinstance(e.source(), DraggableLabel)
+        QTimer.singleShot(0, lambda r=self.r, c=self.c, v=val, fb=from_bank: self.dropped.emit(r, c, v, fb))
 
     def reset(self):
         self.setText("")
