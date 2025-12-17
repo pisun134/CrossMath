@@ -288,6 +288,7 @@ class PuzzleGenerator:
         removed_numbers = []
         playable_grid = [[None for _ in range(grid.size)] for _ in range(grid.size)]
         
+        # First pass: remove based on probability
         for r in range(grid.size):
             for c in range(grid.size):
                 cell = grid.grid[r][c]
@@ -299,6 +300,25 @@ class PuzzleGenerator:
                         playable_grid[r][c] = (None, 'empty_number') # Placeholder for drop
                     else:
                         playable_grid[r][c] = cell
+
+        # Ensure at least 2 numbers are removed
+        while len(removed_numbers) < 2:
+            # Find all remaining numbers
+            candidates = []
+            for r in range(grid.size):
+                for c in range(grid.size):
+                    cell = playable_grid[r][c]
+                    if cell and cell[1] == 'number':
+                        candidates.append((r, c))
+            
+            if not candidates:
+                break # No more numbers to remove
+                
+            # Pick one to remove
+            r, c = random.choice(candidates)
+            val = playable_grid[r][c][0]
+            removed_numbers.append(val)
+            playable_grid[r][c] = (None, 'empty_number')
         
         removed_numbers.sort()
         return playable_grid, removed_numbers
