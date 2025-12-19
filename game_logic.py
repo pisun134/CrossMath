@@ -10,8 +10,20 @@ class Equation:
         return f"{' '.join(map(str, self.parts))} = {self.result}"
 
     @staticmethod
+    def evaluate_parts(parts):
+        # Преобразуем список частей в строку выражения
+        # Заменяем '/' на '//' для целочисленного деления
+        expr = "".join(str(p) for p in parts).replace('/', '//')
+        try:
+            return eval(expr)
+        except ZeroDivisionError:
+            return None
+        except Exception:
+            return None
+
+    @staticmethod
     def generate(difficulty):
-        ops = {
+        ops_map = {
             '+': operator.add,
             '-': operator.sub,
             '*': operator.mul,
@@ -35,45 +47,59 @@ class Equation:
             num_ops = random.choice([2, 3])
             max_val = 40
 
-        # Простая логика генерации (заглушка для более сложной логики пересечений)
-        # В реальном кроссворде нам нужно вписываться в существующие числа.
-        # Пока просто генерируем отдельные допустимые уравнения.
-        
-        parts = []
-        current_val = random.randint(1, max_val)
-        parts.append(current_val)
-        
-        for _ in range(num_ops):
-            op_sym = random.choice(allowed_ops)
-            op_func = ops[op_sym]
+        for _ in range(100):
+            ops = [random.choice(allowed_ops) for _ in range(num_ops)]
+            nums = []
             
-            # Попытка найти допустимое следующее число
-            valid = False
-            for _ in range(20):
-                next_val = random.randint(1, max_val)
-                # Избегаем деления на ноль и нецелых результатов
-                if op_sym == '/' and (next_val == 0 or current_val % next_val != 0):
-                    continue
-                # Избегаем отрицательных или нулевых результатов
-                if op_sym == '-' and current_val - next_val <= 0:
-                    continue
-                    
-                temp_result = int(op_func(current_val, next_val))
-                # Убеждаемся, что результат не равен нулю
-                if temp_result == 0:
-                    continue
-                    
-                parts.append(op_sym)
-                parts.append(next_val)
-                current_val = temp_result
-                valid = True
-                break
+            # Генерируем первое число
+            nums.append(random.randint(1, max_val))
             
-            if not valid:
-                # Откат или повторная попытка (упрощено)
-                return Equation.generate(difficulty)
-
-        return Equation(parts, current_val)
+            current_term_val = nums[0]
+            valid_structure = True
+            
+            for i in range(num_ops):
+                op = ops[i]
+                
+                if op == '*' or op == '/':
+                    if op == '*':
+                        next_val = random.randint(1, max_val)
+                        current_term_val *= next_val
+                    else: # op == '/'
+                        # Находим делители для целочисленного деления
+                        candidates = [n for n in range(1, max_val + 1) if current_term_val % n == 0]
+                        if not candidates:
+                            valid_structure = False
+                            break
+                        next_val = random.choice(candidates)
+                        current_term_val //= next_val
+                else:
+                    # + или -
+                    next_val = random.randint(1, max_val)
+                    current_term_val = next_val
+                
+                nums.append(next_val)
+            
+            if not valid_structure:
+                continue
+                
+            # Собираем уравнение
+            parts = [nums[0]]
+            for i in range(num_ops):
+                parts.append(ops[i])
+                parts.append(nums[i+1])
+            
+            # Вычисляем результат с учетом приоритета
+            res = Equation.evaluate_parts(parts)
+            
+            if res is None:
+                continue
+            if res <= 0: # Результат должен быть положительным
+                continue
+                
+            return Equation(parts, res)
+            
+        # Если не удалось сгенерировать, пробуем снова (рекурсия)
+        return Equation.generate(difficulty)
 
 class CrossMathGrid:
     def __init__(self, size):

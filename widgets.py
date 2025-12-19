@@ -186,10 +186,6 @@ class NumberBank(QFrame):
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
-            # Проверяем источник, чтобы избежать проблем с самосбросом, если нужно,
-            # но пока мы просто принимаем текст.
-            # Если источник - DraggableLabel (из банка), мы можем захотеть игнорировать,
-            # чтобы избежать дублирования, если мы не обрабатываем удаление.
             if isinstance(e.source(), DraggableLabel):
                 e.ignore()
             else:
