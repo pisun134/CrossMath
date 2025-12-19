@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
         difficulty = self.diff_map.get(diff_text, "easy")
         
         # Генерация головоломки
-        # Это может занять некоторое время, в реальном приложении можно вынести в поток
+        # Это может занять некоторое время, (можно вынести в отдельный поток)
         generated = PuzzleGenerator.generate_puzzle(difficulty)
         if not generated:
             QMessageBox.warning(self, "Error", "Failed to generate puzzle. Please try again.")
@@ -117,7 +117,6 @@ class MainWindow(QMainWindow):
                     self.cells[(r, c)] = cell_widget
                     
                     if type_ == 'empty_number':
-                        # Это пустая ячейка
                         cell_widget.setStyleSheet(cell_widget.default_style)
                     else:
                         # Это статическая часть (оператор, равно или данное число)
@@ -155,7 +154,6 @@ class MainWindow(QMainWindow):
         self.cells = {}
 
     def on_cell_dropped(self, r, c, value, from_bank):
-        # Обратный вызов от DropCell
         if from_bank:
             self.number_bank.remove_number(value)
         self.check_solution()
@@ -167,7 +165,6 @@ class MainWindow(QMainWindow):
     def evaluate_expression(self, parts):
         if not parts:
             return None
-        
         try:
             # Вычисление слева направо
             current_val = float(parts[0])
@@ -298,14 +295,12 @@ class MainWindow(QMainWindow):
                     }
                 """)
             else:
-                # Neutral (filled but part of incomplete equation)
                 cell.setStyleSheet(cell.filled_style)
 
         if all_equations_correct:
             QTimer.singleShot(500, self.handle_win)
 
     def handle_win(self):
-        # Calculate points
         diff_text = self.diff_combo.currentText()
         difficulty = self.diff_map.get(diff_text, "easy")
         points = self.score_coeffs.get(difficulty, 10)
